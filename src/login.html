@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPTV Desktop Player — Login</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body data-theme="dark">
+
+<div id="login-app">
+  <div class="login-box">
+
+    <!-- Header -->
+    <div class="login-header">
+      <h1>IPTV Desktop Player</h1>
+      <p id="hdr-sub">Connect to your IPTV service</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab active" data-tab="xtream"     id="tab-xtream">Xtream Codes</button>
+      <button class="tab"        data-tab="m3u-url"    id="tab-m3u-url">M3U URL</button>
+      <button class="tab"        data-tab="m3u-file"   id="tab-m3u-file">Local File</button>
+    </div>
+
+    <div class="login-body">
+
+      <!-- Error message -->
+      <div class="err-msg" id="err-msg"></div>
+
+      <!-- Xtream Codes Pane -->
+      <div class="tab-pane active" id="pane-xtream">
+        <div class="form-group">
+          <label id="lbl-server">Server URL</label>
+          <input type="url" id="xtream-server" placeholder="http://yourserver.com:8080" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label id="lbl-user">Username</label>
+          <input type="text" id="xtream-user" placeholder="username" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label id="lbl-pass">Password</label>
+          <input type="password" id="xtream-pass" placeholder="password" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label id="lbl-label-x">Account Label (optional)</label>
+          <input type="text" id="xtream-label" placeholder="My IPTV">
+        </div>
+        <button class="btn-connect" id="btn-connect-xtream">Connect</button>
+      </div>
+
+      <!-- M3U URL Pane -->
+      <div class="tab-pane" id="pane-m3u-url">
+        <div class="form-group">
+          <label id="lbl-playlist">Playlist URL</label>
+          <input type="url" id="m3u-url-input" placeholder="http://example.com/playlist.m3u" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label id="lbl-label-m">Account Label (optional)</label>
+          <input type="text" id="m3u-url-label" placeholder="My Playlist">
+        </div>
+        <button class="btn-connect" id="btn-connect-m3u-url">Load Playlist</button>
+      </div>
+
+      <!-- Local File Pane -->
+      <div class="tab-pane" id="pane-m3u-file">
+        <div class="form-group">
+          <label id="lbl-file">M3U File</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="file-path-display" placeholder="No file selected" readonly style="flex:1;cursor:pointer;">
+            <button class="btn-secondary" id="btn-browse" style="white-space:nowrap;padding:8px 14px;">Browse…</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label id="lbl-label-f">Account Label (optional)</label>
+          <input type="text" id="m3u-file-label" placeholder="Local Playlist">
+        </div>
+        <button class="btn-connect" id="btn-connect-m3u-file">Load File</button>
+      </div>
+
+    </div>
+
+    <!-- Saved accounts -->
+    <div class="saved-accounts" id="saved-accounts-wrap">
+      <div class="saved-accounts-title" id="lbl-saved">Saved Accounts</div>
+      <div id="accounts-list">
+        <div class="empty-state" id="no-accounts-msg" style="min-height:48px;">No saved accounts</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <span id="app-version">v1.0.0</span>
+      <div class="lang-switch">
+        <button class="lang-btn active" id="lang-en" data-lang="en">EN</button>
+        <button class="lang-btn"        id="lang-ar" data-lang="ar">عربي</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/xtream.js"></script>
+<script src="js/m3u-parser.js"></script>
+<script>
+(async function () {
+  // ---------------------------------------------------------------
+  // Load settings & apply language
+  // ---------------------------------------------------------------
+  const settings = await window.storage.getSettings();
+  window.i18n.setLang(settings.language || 'en');
+  document.body.setAttribute('data-theme', settings.theme || 'dark');
+  applyI18n();
+
+  try {
+    const ver = await window.api.app.getVersion();
+    document.getElementById('app-version').textContent = 'v' + ver;
+  } catch {}
+
+  // ---------------------------------------------------------------
+  // Language switcher
+  // ---------------------------------------------------------------
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const lang = btn.dataset.lang;
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b === btn));
+      window.i18n.setLang(lang);
+      settings.language = lang;
+      await window.storage.saveSettings(settings);
+      applyI18n();
+    });
+  });
+
+  function applyI18n() {
+    const t = (k) => window.i18n.t(k);
+    document.querySelector('.login-header h1').textContent = t('appName');
+    document.getElementById('hdr-sub').textContent = t('loginTitle');
+    document.getElementById('lbl-server').textContent = t('serverUrl');
+    document.getElementById('lbl-user').textContent   = t('username');
+    document.getElementById('lbl-pass').textContent   = t('password');
+    document.getElementById('lbl-playlist').textContent = t('playlistUrl');
+    document.getElementById('lbl-saved').textContent   = t('savedAccounts');
+    document.getElementById('btn-connect-xtream').textContent   = t('connect');
+    document.getElementById('btn-connect-m3u-url').textContent  = t('connect');
+    document.getElementById('btn-connect-m3u-file').textContent = t('connect');
+    document.getElementById('tab-xtream').textContent   = t('xtreamCodes');
+    document.getElementById('tab-m3u-url').textContent  = t('m3uUrl');
+    document.getElementById('tab-m3u-file').textContent = t('localFile');
+    document.getElementById('btn-browse').textContent   = t('chooseFile');
+    document.getElementById('lang-en').classList.toggle('active', window.i18n.getLang() === 'en');
+    document.getElementById('lang-ar').classList.toggle('active', window.i18n.getLang() === 'ar');
+    loadSavedAccounts();
+  }
+
+  // ---------------------------------------------------------------
+  // Tab switching
+  // ---------------------------------------------------------------
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+      hideError();
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // Saved accounts
+  // ---------------------------------------------------------------
+  async function loadSavedAccounts() {
+    const accounts = await window.storage.getAccounts();
+    const list = document.getElementById('accounts-list');
+    list.innerHTML = '';
+
+    if (!accounts.length) {
+      list.innerHTML = `<div class="empty-state" style="min-height:48px;">${window.i18n.t('noAccounts')}</div>`;
+      return;
+    }
+
+    accounts.forEach(acc => {
+      const row = document.createElement('div');
+      row.className = 'account-row' + (acc.active ? ' active-account' : '');
+      row.innerHTML = `
+        <div class="account-name">${esc(acc.label || acc.serverUrl || acc.playlistUrl || acc.filePath || 'Account')}</div>
+        <span class="account-type">${esc(acc.type.toUpperCase())}</span>
+        <button class="account-del" title="${window.i18n.t('removeAccount')}">✕</button>`;
+
+      row.addEventListener('click', () => activateAccount(acc));
+      row.querySelector('.account-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteAccount(acc.id);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  async function activateAccount(acc) {
+    await window.storage.setActiveAccount(acc.id);
+
+    // If M3U-type, pre-load playlist before navigating
+    if (acc.type === 'm3u-url') {
+      try {
+        setConnecting(true, 'btn-connect-m3u-url');
+        const data = await window.m3uParser.fetchFromUrl(acc.playlistUrl);
+        storePlaylist(data);
+      } catch {
+        showError(window.i18n.t('errM3U'));
+        setConnecting(false, 'btn-connect-m3u-url');
+        return;
+      }
+    } else if (acc.type === 'm3u-file') {
+      try {
+        setConnecting(true, 'btn-connect-m3u-file');
+        const data = await window.m3uParser.fetchFromFile(acc.filePath);
+        storePlaylist(data);
+      } catch {
+        showError(window.i18n.t('errM3U'));
+        setConnecting(false, 'btn-connect-m3u-file');
+        return;
+      }
+    }
+
+    await window.api.window.navigate('index.html');
+  }
+
+  async function deleteAccount(id) {
+    await window.storage.removeAccount(id);
+    loadSavedAccounts();
+  }
+
+  // ---------------------------------------------------------------
+  // Xtream connect
+  // ---------------------------------------------------------------
+  document.getElementById('btn-connect-xtream').addEventListener('click', async () => {
+    const server = document.getElementById('xtream-server').value.trim();
+    const user   = document.getElementById('xtream-user').value.trim();
+    const pass   = document.getElementById('xtream-pass').value;
+    const label  = document.getElementById('xtream-label').value.trim();
+
+    if (!server || !user || !pass) {
+      return showError('Please fill in all fields.');
+    }
+
+    setConnecting(true, 'btn-connect-xtream');
+    hideError();
+
+    try {
+      await window.xtreamAPI.login(server, user, pass);
+
+      const account = {
+        id:        Date.now().toString(),
+        type:      'xtream',
+        serverUrl: server,
+        username:  user,
+        password:  pass,
+        label:     label || server,
+        active:    true
+      };
+
+      // Deactivate other accounts
+      const existing = await window.storage.getAccounts();
+      existing.forEach(a => { a.active = false; });
+      await window.storage.write('accounts.json', [...existing, account]);
+
+      await window.api.window.navigate('index.html');
+
+    } catch (err) {
+      const msg = err.message === 'errCredentials' ? window.i18n.t('errCredentials')
+                : err.message === 'errServer'      ? window.i18n.t('errServer')
+                : err.message || window.i18n.t('errServer');
+      showError(msg);
+      setConnecting(false, 'btn-connect-xtream');
+    }
+  });
+
+  // ---------------------------------------------------------------
+  // M3U URL connect
+  // ---------------------------------------------------------------
+  document.getElementById('btn-connect-m3u-url').addEventListener('click', async () => {
+    const url   = document.getElementById('m3u-url-input').value.trim();
+    const label = document.getElementById('m3u-url-label').value.trim();
+
+    if (!url) return showError('Please enter a playlist URL.');
+
+    setConnecting(true, 'btn-connect-m3u-url');
+    hideError();
+
+    try {
+      const data = await window.m3uParser.fetchFromUrl(url);
+      storePlaylist(data);
+
+      const account = {
+        id:          Date.now().toString(),
+        type:        'm3u-url',
+        playlistUrl: url,
+        label:       label || url,
+        active:      true
+      };
+
+      const existing = await window.storage.getAccounts();
+      existing.forEach(a => { a.active = false; });
+      await window.storage.write('accounts.json', [...existing, account]);
+
+      await window.api.window.navigate('index.html');
+
+    } catch (err) {
+      showError(window.i18n.t('errM3U'));
+      setConnecting(false, 'btn-connect-m3u-url');
+    }
+  });
+
+  // ---------------------------------------------------------------
+  // M3U File browse + connect
+  // ---------------------------------------------------------------
+  let selectedFilePath = null;
+
+  document.getElementById('btn-browse').addEventListener('click', async () => {
+    const filePath = await window.api.dialog.openFile([
+      { name: 'M3U Playlists', extensions: ['m3u', 'm3u8'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+    if (filePath) {
+      selectedFilePath = filePath;
+      document.getElementById('file-path-display').value = filePath;
+    }
+  });
+
+  document.getElementById('btn-connect-m3u-file').addEventListener('click', async () => {
+    if (!selectedFilePath) return showError(window.i18n.t('errNoFile'));
+    const label = document.getElementById('m3u-file-label').value.trim();
+
+    setConnecting(true, 'btn-connect-m3u-file');
+    hideError();
+
+    try {
+      const data = await window.m3uParser.fetchFromFile(selectedFilePath);
+      storePlaylist(data);
+
+      const account = {
+        id:       Date.now().toString(),
+        type:     'm3u-file',
+        filePath: selectedFilePath,
+        label:    label || selectedFilePath.split(/[\\/]/).pop(),
+        active:   true
+      };
+
+      const existing = await window.storage.getAccounts();
+      existing.forEach(a => { a.active = false; });
+      await window.storage.write('accounts.json', [...existing, account]);
+
+      await window.api.window.navigate('index.html');
+
+    } catch (err) {
+      showError(window.i18n.t('errM3U'));
+      setConnecting(false, 'btn-connect-m3u-file');
+    }
+  });
+
+  // ---------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------
+  function storePlaylist(data) {
+    // Store channel data in sessionStorage for the main window to pick up
+    sessionStorage.setItem('playlist', JSON.stringify(data));
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('err-msg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  function hideError() {
+    document.getElementById('err-msg').classList.remove('show');
+  }
+
+  function setConnecting(loading, btnId) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    if (loading) {
+      btn.textContent = window.i18n.t('connecting');
+      btn.classList.add('loading');
+    } else {
+      btn.textContent = window.i18n.t('connect');
+      btn.classList.remove('loading');
+    }
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadSavedAccounts();
+})();
+</script>
+</body>
+</html>

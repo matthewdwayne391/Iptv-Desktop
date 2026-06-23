@@ -1,0 +1,9 @@
+{
+  "language": "en",
+  "theme": "dark",
+  "playerBufferSize": 30,
+  "playerQuality": "auto",
+  "autoReconnect": true,
+  "epgUrl": "",
+  "logoCache": true
+}

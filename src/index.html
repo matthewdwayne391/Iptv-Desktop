@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPTV Desktop Player</title>
+
+  <!-- HLS.js — bundled locally (Fix #9: use local copy, not ../node_modules relative path) -->
+  <script src="js/hls.min.js"></script>
+
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body data-theme="dark">
+
+<div id="app">
+
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      IPTV Pro
+      <small id="account-label"></small>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="live">
+        <span class="nav-icon">📺</span>
+        <span class="nav-label">
+          Live TV
+          <span class="nav-label-ar">البث المباشر</span>
+        </span>
+      </button>
+      <button class="nav-item" data-view="movies">
+        <span class="nav-icon">🎬</span>
+        <span class="nav-label">
+          Movies
+          <span class="nav-label-ar">الأفلام</span>
+        </span>
+      </button>
+      <button class="nav-item" data-view="series">
+        <span class="nav-icon">📂</span>
+        <span class="nav-label">
+          Series
+          <span class="nav-label-ar">المسلسلات</span>
+        </span>
+      </button>
+      <button class="nav-item" data-view="favorites">
+        <span class="nav-icon">⭐</span>
+        <span class="nav-label">
+          Favorites
+          <span class="nav-label-ar">المفضلة</span>
+        </span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">
+          Settings
+          <span class="nav-label-ar">الإعدادات</span>
+        </span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <!-- Fix #8 / #7: unique IDs, no duplicates -->
+      <button id="btn-refresh">↻ Refresh Playlist</button>
+      <button id="btn-switch-account">⇆ Switch Account</button>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main id="main">
+
+    <!-- ---- LIVE TV ---- -->
+    <section class="view-section" data-section="live" id="live-section">
+      <div class="live-content">
+        <div id="channel-panel">
+          <div class="channel-search">
+            <input type="text" id="live-search" placeholder="Search channels…">
+          </div>
+          <div id="live-cats"></div>
+          <div id="channel-list"></div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+          <div id="player-wrap">
+            <video id="video-player" controls playsinline></video>
+
+            <div id="player-loading" class="hidden">
+              <div class="spinner"></div>
+            </div>
+
+            <div id="player-error" class="hidden"></div>
+
+            <div class="player-controls">
+              <div id="now-playing-wrap" class="hidden" style="flex:1;display:flex;align-items:center;gap:8px;overflow:hidden;">
+                <span class="now-badge">LIVE</span>
+                <span id="now-playing-name"></span>
+              </div>
+              <button id="btn-mute" title="Mute">🔊</button>
+              <input type="range" id="vol-slider" min="0" max="100" value="80" title="Volume">
+              <button id="btn-fullscreen" title="Fullscreen">⛶</button>
+            </div>
+          </div>
+
+          <div id="epg-bar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- MOVIES ---- -->
+    <section class="view-section hidden" data-section="movies" id="movies-section">
+      <div class="vod-search">
+        <input type="text" id="vod-search" placeholder="Search movies…">
+      </div>
+      <div id="vod-cats"></div>
+      <div id="vod-grid"></div>
+    </section>
+
+    <!-- ---- SERIES ---- -->
+    <section class="view-section hidden" data-section="series" id="series-section">
+      <div class="vod-search">
+        <input type="text" id="series-search" placeholder="Search series…">
+      </div>
+      <div id="series-cats"></div>
+      <div id="series-grid"></div>
+    </section>
+
+    <!-- ---- FAVORITES ---- -->
+    <section class="view-section hidden" data-section="favorites" id="favorites-section">
+      <div id="favorites-list"></div>
+    </section>
+
+    <!-- ---- SETTINGS ---- -->
+    <section class="view-section hidden" data-section="settings" id="settings-section">
+      <div class="settings-inner">
+
+        <div class="settings-section">
+          <div class="settings-section-title">Appearance</div>
+          <div class="settings-row">
+            <label>Language</label>
+            <select id="set-language" class="settings-control">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label>Theme</label>
+            <select id="set-theme" class="settings-control">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Player</div>
+          <div class="settings-row">
+            <label>Buffer Size (seconds)</label>
+            <input type="number" id="set-buffer" min="5" max="120" class="settings-control">
+          </div>
+          <div class="settings-row">
+            <label>Preferred Quality</label>
+            <select id="set-quality" class="settings-control">
+              <option value="auto">Auto</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label>Auto Reconnect</label>
+            <input type="checkbox" id="set-reconnect">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">EPG</div>
+          <div class="settings-row">
+            <label>EPG URL (XMLTV)</label>
+            <input type="url" id="set-epg-url" placeholder="http://example.com/epg.xml" class="settings-control">
+          </div>
+          <div class="settings-row">
+            <label>Cache Channel Logos</label>
+            <input type="checkbox" id="set-logo-cache" checked>
+          </div>
+        </div>
+
+        <!-- Fix #7: unique ID for settings "manage accounts" button -->
+        <div class="settings-section">
+          <div class="settings-section-title">Account</div>
+          <div class="settings-row">
+            <label>Account Management</label>
+            <div class="settings-actions">
+              <button class="btn-secondary" id="btn-manage-accounts-settings">Switch / Add Account</button>
+              <button class="btn-danger"    id="btn-clear-cache">Clear Logo Cache</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn-primary" id="btn-save-settings">Save Settings</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Detail modal -->
+<div id="detail-modal" class="hidden"></div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Scripts -->
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/xtream.js"></script>
+<script src="js/m3u-parser.js"></script>
+<script src="js/player.js"></script>
+<script src="js/epg.js"></script>
+<script src="js/favorites.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

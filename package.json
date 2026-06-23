@@ -1,0 +1,34 @@
+{
+  "name": "iptv-desktop-player",
+  "version": "1.0.0",
+  "description": "IPTV Desktop Player — Xtream Codes API, M3U playlists, HLS streaming, Arabic/English UI",
+  "main": "main.js",
+  "author": {
+    "name": "IPTV Pro",
+    "email": ""
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/matthewdwayne391/Iptv-Desktop",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matthewdwayne391/Iptv-Desktop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matthewdwayne391/Iptv-Desktop/issues"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder build --win --x64",
+    "build:portable": "electron-builder build --win portable",
+    "build:dir": "electron-builder build --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "hls.js": "^1.6.16"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  }
+}

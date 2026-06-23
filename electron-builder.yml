@@ -1,0 +1,52 @@
+appId: com.iptv.desktop.player
+productName: IPTV Desktop Player
+copyright: "Copyright © 2024 IPTV Pro"
+
+directories:
+  output: dist
+  buildResources: build
+
+# Files packaged into the app (asar archive)
+files:
+  - main.js
+  - preload.js
+  - "src/**/*"
+  - "!src/**/*.map"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  # icon: build/icon.ico   ← Place a 256x256 icon.ico in build/ and uncomment this line
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "IPTV Desktop Player"
+
+portable:
+  artifactName: "IPTV-Desktop-Player-${version}-Portable.exe"
+
+# ─────────────────────────────────────────────────────────────────
+# GitHub Releases — auto-update config (ready for electron-updater)
+# Uncomment this section AFTER adding electron-updater to the project.
+# ─────────────────────────────────────────────────────────────────
+# publish:
+#   provider: github
+#   owner: matthewdwayne391
+#   repo: Iptv-Desktop
+#   releaseType: release
+#
+# To publish a release via CI/CD:
+#   GH_TOKEN=<your_github_token> npm run build
+# ─────────────────────────────────────────────────────────────────
+
+publish: null

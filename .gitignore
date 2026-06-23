@@ -1,0 +1,88 @@
+# ================================
+# Electron / Node.js
+# ================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build output
+dist/
+out/
+build/*.exe
+build/*.dmg
+build/*.AppImage
+build/*.deb
+build/*.rpm
+
+# electron-builder cache
+.cache/
+.electron-builder.env
+
+# ================================
+# OS generated
+# ================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V{,100}
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Windows image file caches
+*.StackDump
+
+# ================================
+# Editor / IDE
+# ================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.cursor/
+
+# ================================
+# Logs
+# ================================
+logs/
+*.log
+
+# ================================
+# Temp / cache
+# ================================
+.tmp/
+.temp/
+*.tmp
+*.temp
+
+# ================================
+# Secrets — never commit these
+# ================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.p12
+*.pfx
+
+# ================================
+# electron-builder generated artifacts
+# ================================
+dist/builder-debug.yml
+dist/builder-effective-config.yaml
+dist/*.blockmap
+dist/*.yml
+dist/*.yaml
+
+# ================================
+# Keep these in git
+# ================================
+# src/js/hls.min.js  — local HLS.js copy (intentionally committed)
+# data/*.json        — seed data files
+# build/.gitkeep     — placeholder for build/ directory
